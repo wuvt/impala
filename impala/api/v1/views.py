@@ -2,6 +2,7 @@
 
 from impala.api.v1 import bp
 
+
 @bp.route('/')
 def index():
     return 'Hello world!'

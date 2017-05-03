@@ -1,5 +1,3 @@
-import os
-
 class Config(object):
     DEBUG = False
     TESTING = False
@@ -8,8 +6,10 @@ class Config(object):
     SECRET_KEY = "changeme"
     SQLALCHEMY_DATABASE_URI = "postgresql://impala:4DhEJW3gFyPtEF4DmZmChJ@localhost/impala"
 
+
 class ProductionConfig(Config):
     DEBUG = False
+
 
 class DevelopmentConfig(Config):
     DEVELOPMENT = True

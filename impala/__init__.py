@@ -12,8 +12,10 @@ migrate = Migrate(app, db)
 
 from impala.catalog.models import *
 
+
 def init_app():
     app.register_blueprint(v1.bp, url_prefix='/api/v1')
+
 
 init_app()
 

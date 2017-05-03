@@ -2,6 +2,7 @@ from impala import db
 from sqlalchemy.dialects.postgresql import UUID
 import enum
 
+
 class Stack(db.Model):
     __tablename__ = 'stacks'
 
@@ -45,7 +46,7 @@ class HoldingGroup(db.Model):
 
     stack_id = db.Column(UUID, db.ForeignKey('stacks.id'), nullable=False)
     holdings = db.relationship("Holding", backref="holding_group",
-                                    lazy="dynamic")
+                               lazy="dynamic")
 
 
 class Holding(db.Model):
@@ -54,14 +55,14 @@ class Holding(db.Model):
     id = db.Column(UUID, primary_key=True)
     added_by = db.Column(db.String(), nullable=False)
     added_at = db.Column(db.DateTime(), nullable=False)
-  
+
     label = db.Column(db.String())
     release_mbid = db.Column(UUID)
     description = db.Column(db.Text())
     source_url = db.Column(db.String())
     source_desc = db.Column(db.Text())
     active = db.Column(db.Boolean(), nullable=False, default=True)
-    
+
     holding_group_id = db.Column(UUID, db.ForeignKey('holding_groups.id'),
                                  nullable=False)
     format_id = db.Column(UUID, db.ForeignKey('formats.id'), nullable=False)
@@ -122,7 +123,7 @@ class HoldingComment(db.Model):
     review_date = db.Column(db.Date())
     type = db.Column(db.Enum(HoldingCommentType),
                      default=HoldingCommentType.OTHER, nullable=False)
-    
+
     holding_id = db.Column(UUID, db.ForeignKey('holdings.id'), nullable=False)
 
 
@@ -150,4 +151,3 @@ class Track(db.Model):
                         default=TrackFccStatus.UNKNOWN)
 
     holding_id = db.Column(UUID, db.ForeignKey('holdings.id'), nullable=False)
-
