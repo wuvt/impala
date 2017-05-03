@@ -1,5 +1,6 @@
 from flask import Flask
-from flask.ext.sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+from flask_sqlalchemy import SQLAlchemy
 from impala.api import v1
 import impala.config
 
@@ -7,6 +8,7 @@ app = Flask(__name__)
 app.config.from_object(config.DevelopmentConfig)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 from impala.catalog.models import *
 

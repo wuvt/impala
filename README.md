@@ -25,8 +25,8 @@ flask run
 
 If you change the schema:
 ``
-python3 manage.py migrate
-python3 manage.py upgrade
+flask db migrate
+flask db upgrade
 ``
 
 TODO (in order)
