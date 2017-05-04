@@ -1,7 +1,6 @@
 from flask import Flask
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
-from impala.api import v1
 from impala import defaults
 import os
 
@@ -20,6 +19,7 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 from impala.catalog.models import *
+from impala.api import v1
 
 
 def init_app():

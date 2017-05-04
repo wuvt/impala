@@ -31,12 +31,11 @@ flask db upgrade
 
 TODO (in order)
 ===============
-- API GET/PUT/POST/DELETE for each model
+- API PUT/POST/DELETE for each model
 - AuthN
 - AuthZ
 - Frontend build-out 
     - Decide whether this goes here or in a separate app
     - Bootstrap!
-    - Figure out how album art plays into this - MOSS? 
 - uwsgi file
 - Containerize
