@@ -68,9 +68,14 @@ class ImpalaResource(Resource):
             return "Item added", 200
 
         except sqlalchemy.exc.IntegrityError:
+            db.session.rollback()
             abort(409, success=False, message="Item already exists or foreign key constraint not met")
         except sqlalchemy.exc.StatementError:
+            db.session.rollback()
             abort(400, success=False, message="Invalid parameter syntax")
+        except:
+            db.session.rollback()
+            abort(500, success=False, message="Something broke during the query")
 
     def patch(self, model, id):
         post_parser = reqparse.RequestParser()
@@ -95,9 +100,14 @@ class ImpalaResource(Resource):
             return "Item updated", 200
 
         except sqlalchemy.exc.IntegrityError:
+            db.session.rollback()
             abort(409, success=False, message="Invalid change")
         except sqlalchemy.exc.StatementError:
+            db.session.rollback()
             abort(400, success=False, message="Invalid parameter syntax")
+        except:
+            db.session.rollback()
+            abort(500, success=False, message="Something broke during the query")
 
 
 class Stack(ImpalaResource):
