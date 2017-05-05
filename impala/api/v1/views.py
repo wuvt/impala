@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 
+from datetime import datetime
 from impala.catalog import models
+from impala import db
 from impala.api.v1 import bp
-from flask_restful import Api, Resource, abort
+from flask_restful import Api, Resource, abort, reqparse
 from flask import make_response, json
+import sqlalchemy
+from uuid import uuid4
 
 
 class ApiVersionInfo(Resource):
@@ -12,126 +16,216 @@ class ApiVersionInfo(Resource):
         return {'stable': False}
 
 
-class ImpalaResource(Resource):
-    # TODO require auth
-    pass
-
-
 def all_fields(model):
     columns = [c.name for c in model.__table__.columns]
     return dict([(c, getattr(model, c)) for c in columns])
 
 
+class ImpalaResource(Resource):
+    # TODO require auth
+    def get(self, model, id=None):
+        if id:
+            item = model.query.get(id)
+            if not item:
+                abort(404, success=False, message="Item not found")
+            return all_fields(item)
+        else:
+            items = model.query.all()
+            return [all_fields(item) for item in items]
+
+    def put(self, model, added_by="Unknown"):
+        post_parser = reqparse.RequestParser()
+
+        for c in model.__table__.columns:
+            name = c.name
+            required = not c.nullable
+            if name not in ['id', 'added_at', 'added_by']:
+                post_parser.add_argument(name, dest=name, required=required)
+            else:
+                post_parser.add_argument(name, dest=name, required=False)
+
+        args = post_parser.parse_args()
+        if not args['id']:
+            args['id'] = uuid4().__str__()
+
+        # TODO auth - require user to have impersonation permissions
+        if not args['added_by']:
+            args['added_by'] = added_by
+        if not args['added_at']:
+            args['added_at'] = datetime.now()
+
+        del_list = []
+        for k, v in args.items():
+            if not v:
+                del_list.append(k)
+        for k in del_list:
+            args.pop(k)
+
+        item = model(**args)
+        try:
+            db.session.add(item)
+            db.session.commit()
+            return "Item added", 200
+
+        except sqlalchemy.exc.IntegrityError:
+            abort(409, success=False, message="Item already exists or foreign key constraint not met")
+        except sqlalchemy.exc.StatementError:
+            abort(400, success=False, message="Invalid parameter syntax")
+
+    def patch(self, model, id):
+        post_parser = reqparse.RequestParser()
+
+        for c in model.__table__.columns:
+            name = c.name
+            if name not in ['id', 'added_at', 'added_by']:
+                post_parser.add_argument(name, dest=name, required=False)
+
+        args = post_parser.parse_args()
+
+        del_list = []
+        for k, v in args.items():
+            if not v:
+                del_list.append(k)
+        for k in del_list:
+            args.pop(k)
+
+        try:
+            model.query.filter_by(id=id).update(args)
+            db.session.commit()
+            return "Item updated", 200
+
+        except sqlalchemy.exc.IntegrityError:
+            abort(409, success=False, message="Invalid change")
+        except sqlalchemy.exc.StatementError:
+            abort(400, success=False, message="Invalid parameter syntax")
+
+
 class Stack(ImpalaResource):
     def get(self, id):
-        stack = models.Stack.query.get(id)
-        if not stack:
-            abort(404, success=False, message="Stack not found")
-        return all_fields(stack)
+        return super().get(models.Stack, id)
+
+    def patch(self, id):
+        return super().patch(models.Stack, id)
 
 
 class StackList(ImpalaResource):
     def get(self):
-        stacks = models.Stack.query.all()
-        return [all_fields(stack) for stack in stacks]
+        return super().get(models.Stack)
+
+    def put(self):
+        return super().put(models.Stack)
 
 
 class Format(ImpalaResource):
     def get(self, id):
-        format = models.Format.query.get(id)
-        if not format:
-            abort(404, success=False, message="Format not found")
-        return all_fields(format)
+        return super().get(models.Format, id)
+
+    def patch(self, id):
+        return super().patch(models.Format, id)
 
 
 class FormatList(ImpalaResource):
     def get(self):
-        formats = models.Format.query.all()
-        return [all_fields(format) for format in formats]
+        return super().get(models.Format)
+
+    def put(self):
+        return super().put(models.Format)
 
 
 class HoldingGroup(ImpalaResource):
     def get(self, id):
-        holding_group = models.HoldingGroup.query.get(id)
-        if not holding_group:
-            abort(404, success=False, message="HoldingGroup not found")
-        return all_fields(holding_group)
+        return super().get(models.HoldingGroup, id)
+
+    def patch(self, id):
+        return super().patch(models.HoldingGroup, id)
 
 
 class HoldingGroupList(ImpalaResource):
     def get(self):
-        holding_groups = models.HoldingGroup.query.all()
-        return [all_fields(holding_group) for holding_group in holding_groups]
+        return super().get(models.HoldingGroup)
+
+    def put(self):
+        return super().put(models.HoldingGroup)
 
 
 class Holding(ImpalaResource):
     def get(self, id):
-        holding = models.Holding.query.get(id)
-        if not holding:
-            abort(404, success=False, message="Holding not found")
-        return all_fields(holding)
+        return super().get(models.Holding, id)
+
+    def patch(self, id):
+        return super().patch(models.Holding, id)
 
 
 class HoldingList(ImpalaResource):
     def get(self):
-        holdings = models.Holding.query.all()
-        return [all_fields(holding) for holding in holdings]
+        return super().get(models.Holding)
+
+    def put(self):
+        return super().put(models.Holding)
 
 
 class RotationRelease(ImpalaResource):
     def get(self, id):
-        rotation_release = models.RotationRelease.query.get(id)
-        if not rotation_release:
-            abort(404, success=False, message="RotationRelease not found")
-        return all_fields(rotation_release)
+        return super().get(models.RotationRelease, id)
+
+    def patch(self, id):
+        return super().patch(models.RotationRelease, id)
 
 
 class RotationReleaseList(ImpalaResource):
     def get(self):
-        rotation_releases = models.RotationRelease.query.all()
-        return [all_fields(rotation_release) for rotation_release in rotation_releases]
+        return super().get(models.RotationRelease)
+
+    def put(self):
+        return super().put(models.RotationRelease)
 
 
 class HoldingTag(ImpalaResource):
     def get(self, id):
-        holding_tag = models.HoldingTag.query.get(id)
-        if not holding_tag:
-            abort(404, success=False, message="HoldingTag not found")
-        return all_fields(holding_tag)
+        return super().get(models.HoldingTag, id)
+
+    def patch(self, id):
+        return super().patch(models.HoldingTag, id)
 
 
 class HoldingTagList(ImpalaResource):
     def get(self):
-        holding_tags = models.HoldingTag.query.all()
-        return [all_fields(holding_tag) for holding_tag in holding_tags]
+        return super().get(models.HoldingTag)
+
+    def put(self):
+        return super().put(models.HoldingTag)
 
 
 class HoldingComment(ImpalaResource):
     def get(self, id):
-        holding_comment = models.HoldingComment.query.get(id)
-        if not holding_comment:
-            abort(404, success=False, message="HoldingComment not found")
-        return all_fields(holding_comment)
+        return super().get(models.HoldingComment, id)
+
+    def patch(self, id):
+        return super().patch(models.HoldingComment, id)
 
 
 class HoldingCommentList(ImpalaResource):
     def get(self):
-        holding_comments = models.HoldingComment.query.all()
-        return [all_fields(holding_comment) for holding_comment in holding_comments]
+        return super().get(models.HoldingComment)
+
+    def put(self):
+        return super().put(models.HoldingComment)
 
 
 class Track(ImpalaResource):
     def get(self, id):
-        track = models.Track.query.get(id)
-        if not track:
-            abort(404, success=False, message="Track not found")
-        return all_fields(track)
+        return super().get(models.Track, id)
+
+    def patch(self, id):
+        return super().patch(models.Track, id)
 
 
 class TrackList(ImpalaResource):
     def get(self):
-        tracks = models.Track.query.all()
-        return [all_fields(track) for track in tracks]
+        return super().get(models.Track)
+
+    def put(self):
+        return super().put(models.Track)
 
 
 api = Api(bp)
