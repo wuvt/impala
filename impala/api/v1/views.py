@@ -65,7 +65,7 @@ class ImpalaResource(Resource):
         try:
             db.session.add(item)
             db.session.commit()
-            return "Item added", 200
+            return {'message': "Item added", 'id': args['id']}, 201
 
         except sqlalchemy.exc.IntegrityError:
             db.session.rollback()
@@ -97,7 +97,7 @@ class ImpalaResource(Resource):
         try:
             model.query.filter_by(id=id).update(args)
             db.session.commit()
-            return "Item updated", 200
+            return {'message': "Item updated", 'id': id}, 200
 
         except sqlalchemy.exc.IntegrityError:
             db.session.rollback()
