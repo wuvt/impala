@@ -40,7 +40,11 @@ class ImpalaResource(Resource):
             name = c.name
             required = not c.nullable
             if name not in ['id', 'added_at', 'added_by']:
-                post_parser.add_argument(name, dest=name, required=required)
+                if str(c.type) == 'INTEGER':
+                    post_parser.add_argument(name, dest=name, type=int,
+                                             required=required)
+                else:
+                    post_parser.add_argument(name, dest=name, required=required)
             else:
                 post_parser.add_argument(name, dest=name, required=False)
 
@@ -53,6 +57,7 @@ class ImpalaResource(Resource):
             args['added_by'] = added_by
         if not args['added_at']:
             args['added_at'] = datetime.now()
+        print(args)
 
         del_list = []
         for k, v in args.items():
@@ -83,7 +88,11 @@ class ImpalaResource(Resource):
         for c in model.__table__.columns:
             name = c.name
             if name not in ['id', 'added_at', 'added_by']:
-                post_parser.add_argument(name, dest=name, required=False)
+                if str(c.type) == 'INTEGER':
+                    post_parser.add_argument(name, dest=name, type=int,
+                                             required=False)
+                else:
+                    post_parser.add_argument(name, dest=name, required=False)
 
         args = post_parser.parse_args()
 
