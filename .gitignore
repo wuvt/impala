@@ -2,3 +2,4 @@ venv/
 *.pyc
 __pycache__/
 impala/config.py
+*.swp
