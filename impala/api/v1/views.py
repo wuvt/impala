@@ -52,12 +52,8 @@ class ImpalaResource(Resource):
         if not args['id']:
             args['id'] = uuid4().__str__()
 
-        # TODO auth - require user to have impersonation permissions
-        if not args['added_by']:
-            args['added_by'] = added_by
-        if not args['added_at']:
-            args['added_at'] = datetime.now()
-        print(args)
+        args['added_by'] = added_by
+        args['added_at'] = datetime.now()
 
         del_list = []
         for k, v in args.items():
