@@ -5,7 +5,8 @@ from impala.catalog import models
 from impala import db
 from impala.api.v1 import bp
 from flask_restful import Api, Resource, abort, reqparse
-from flask import make_response, json
+from flask import make_response, json, current_app, request, session
+from passlib.hash import pbkdf2_sha256
 import sqlalchemy
 from uuid import uuid4
 
@@ -21,8 +22,33 @@ def all_fields(model):
     return dict([(c, getattr(model, c)) for c in columns])
 
 
+class LoginResource(Resource):
+    def get(self):
+        auth = request.authorization
+        if auth:
+            user = current_app.config['M2M_USERS'].get(auth.username, {})
+            password_hash = user.get('password_hash', None)
+
+            if password_hash is not None and \
+                    pbkdf2_sha256.verify(auth.password, password_hash):
+                session['username'] = auth.username
+                session['access'] = user.get('access', [])
+                return {'message': "Logged in"}, 200
+            else:
+                abort(401, message="Invalid username or password")
+        else:
+            return {'message': "Authentication required"}, 401, \
+                    {'WWW-Authenticate': 'Basic realm="impala"'}
+
+
+class LogoutResource(Resource):
+    def post(self):
+        session.pop('username', None)
+        session.pop('access', [])
+        return {'message': "Logged out"}, 200
+
+
 class ImpalaResource(Resource):
-    # TODO require auth
     def get(self, model, id=None):
         if id:
             item = model.query.get(id)
@@ -121,13 +147,22 @@ class LibrarianResource(ImpalaResource):
     may perform PATCH or PUT operations.
     """
     def get(self, model, id=None):
-        return super().get(model, id)
+        if 'username' in session:
+            return super().get(model, id)
+        else:
+            abort(403, success=False, message="Unauthorized")
 
     def patch(self, model, id=None):
-        return super().patch(model, id)
+        if 'librarian' in session.get('access', []):
+            return super().patch(model, id)
+        else:
+            abort(403, success=False, message="Unauthorized")
 
     def put(self, model):
-        return super().put(model)
+        if 'librarian' in session.get('access', []):
+            return super().put(model)
+        else:
+            abort(403, success=False, message="Unauthorized")
 
 
 class UserResource(ImpalaResource):
@@ -139,13 +174,24 @@ class UserResource(ImpalaResource):
     corresponds to their username.
     """
     def get(self, model, id=None):
-        return super().get(model, id)
+        if 'username' in session:
+            return super().get(model, id)
+        else:
+            abort(403, success=False, message="Unauthorized")
 
     def patch(self, model, id=None):
-        return super().patch(model, id)
+        if 'librarian' in session.get('access', []) or \
+                request.form['added_by'] == session['username']:
+            return super().patch(model, id)
+        else:
+            abort(403, success=False, message="Unauthorized")
 
     def put(self, model):
-        return super().put(model)
+        if 'librarian' in session.get('access', []) or \
+                request.form['added_by'] == session['username']:
+            return super().put(model)
+        else:
+            abort(403, success=False, message="Unauthorized")
 
 
 class Stack(LibrarianResource):
@@ -294,6 +340,8 @@ class TrackMetadataList(LibrarianResource):
 
 api = Api(bp)
 api.add_resource(ApiVersionInfo, '/')
+api.add_resource(LoginResource, '/login')
+api.add_resource(LogoutResource, '/logout')
 api.add_resource(Stack, '/stacks/<string:id>')
 api.add_resource(StackList, '/stacks')
 api.add_resource(Format, '/formats/<string:id>')
