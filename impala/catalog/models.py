@@ -151,3 +151,18 @@ class Track(db.Model):
                         default=TrackFccStatus.UNKNOWN)
 
     holding_id = db.Column(UUID, db.ForeignKey('holdings.id'), nullable=False)
+    track_metadata = db.relationship("TrackMetadata", backref="track",
+                                     lazy="dynamic")
+
+
+class TrackMetadata(db.Model):
+    __tablename__ = "track_metadata"
+
+    id = db.Column(UUID, primary_key=True)
+    added_by = db.Column(db.String(), nullable=False)
+    added_at = db.Column(db.DateTime(), nullable=False)
+
+    key = db.Column(db.String(), nullable=False)
+    value = db.Column(db.Text(), nullable=False)
+
+    track_id = db.Column(UUID, db.ForeignKey('tracks.id'), nullable=False)

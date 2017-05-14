@@ -276,6 +276,22 @@ class TrackList(LibrarianResource):
         return super().put(models.Track)
 
 
+class TrackMetadata(LibrarianResource):
+    def get(self, id):
+        return super().get(models.TrackMetadata, id)
+
+    def patch(self, id):
+        return super().patch(models.Track, id)
+
+
+class TrackMetadataList(LibrarianResource):
+    def get(self):
+        return super().get(models.TrackMetadata)
+
+    def put(self):
+        return super().put(models.TrackMetadata)
+
+
 api = Api(bp)
 api.add_resource(ApiVersionInfo, '/')
 api.add_resource(Stack, '/stacks/<string:id>')
@@ -294,6 +310,8 @@ api.add_resource(HoldingComment, '/holding_comments/<string:id>')
 api.add_resource(HoldingCommentList, '/holding_comments')
 api.add_resource(Track, '/tracks/<string:id>')
 api.add_resource(TrackList, '/tracks')
+api.add_resource(TrackMetadata, '/track_metadata/<string:id>')
+api.add_resource(TrackMetadataList, '/track_metadata')
 
 
 @api.representation('application/json')
