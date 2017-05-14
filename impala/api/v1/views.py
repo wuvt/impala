@@ -180,15 +180,17 @@ class UserResource(ImpalaResource):
             abort(403, success=False, message="Unauthorized")
 
     def patch(self, model, id=None):
+        data = super().get(model, id)
         if 'librarian' in session.get('access', []) or \
-                request.form['added_by'] == session['username']:
+                data['added_by'] == session['username']:
             return super().patch(model, id)
         else:
             abort(403, success=False, message="Unauthorized")
 
     def put(self, model):
+        data = super().get(model, id)
         if 'librarian' in session.get('access', []) or \
-                request.form['added_by'] == session['username']:
+                data['added_by'] == session['username']:
             return super().put(model)
         else:
             abort(403, success=False, message="Unauthorized")
