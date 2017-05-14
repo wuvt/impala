@@ -115,7 +115,40 @@ class ImpalaResource(Resource):
             abort(500, success=False, message="Something broke during the query")
 
 
-class Stack(ImpalaResource):
+class LibrarianResource(ImpalaResource):
+    """
+    Any authenticated user may do a GET. Only users with the "librarian" role
+    may perform PATCH or PUT operations.
+    """
+    def get(self, model, id=None):
+        return super().get(model, id)
+
+    def patch(self, model, id=None):
+        return super().patch(model, id)
+
+    def put(self, model):
+        return super().put(model)
+
+
+class UserResource(ImpalaResource):
+    """
+    Any authenticated user may do a GET. Users with the "librarian" role may
+    perform arbitrary PATCH or PUT operations. All users may perform PUT
+    operations where "added_by" corresponds to their username. All users may
+    perform PATCH operations on resources where the "added_by" field
+    corresponds to their username.
+    """
+    def get(self, model, id=None):
+        return super().get(model, id)
+
+    def patch(self, model, id=None):
+        return super().patch(model, id)
+
+    def put(self, model):
+        return super().put(model)
+
+
+class Stack(LibrarianResource):
     def get(self, id):
         return super().get(models.Stack, id)
 
@@ -123,7 +156,7 @@ class Stack(ImpalaResource):
         return super().patch(models.Stack, id)
 
 
-class StackList(ImpalaResource):
+class StackList(LibrarianResource):
     def get(self):
         return super().get(models.Stack)
 
@@ -131,7 +164,7 @@ class StackList(ImpalaResource):
         return super().put(models.Stack)
 
 
-class Format(ImpalaResource):
+class Format(LibrarianResource):
     def get(self, id):
         return super().get(models.Format, id)
 
@@ -139,7 +172,7 @@ class Format(ImpalaResource):
         return super().patch(models.Format, id)
 
 
-class FormatList(ImpalaResource):
+class FormatList(LibrarianResource):
     def get(self):
         return super().get(models.Format)
 
@@ -147,7 +180,7 @@ class FormatList(ImpalaResource):
         return super().put(models.Format)
 
 
-class HoldingGroup(ImpalaResource):
+class HoldingGroup(LibrarianResource):
     def get(self, id):
         return super().get(models.HoldingGroup, id)
 
@@ -155,7 +188,7 @@ class HoldingGroup(ImpalaResource):
         return super().patch(models.HoldingGroup, id)
 
 
-class HoldingGroupList(ImpalaResource):
+class HoldingGroupList(LibrarianResource):
     def get(self):
         return super().get(models.HoldingGroup)
 
@@ -163,7 +196,7 @@ class HoldingGroupList(ImpalaResource):
         return super().put(models.HoldingGroup)
 
 
-class Holding(ImpalaResource):
+class Holding(LibrarianResource):
     def get(self, id):
         return super().get(models.Holding, id)
 
@@ -171,7 +204,7 @@ class Holding(ImpalaResource):
         return super().patch(models.Holding, id)
 
 
-class HoldingList(ImpalaResource):
+class HoldingList(LibrarianResource):
     def get(self):
         return super().get(models.Holding)
 
@@ -179,7 +212,7 @@ class HoldingList(ImpalaResource):
         return super().put(models.Holding)
 
 
-class RotationRelease(ImpalaResource):
+class RotationRelease(LibrarianResource):
     def get(self, id):
         return super().get(models.RotationRelease, id)
 
@@ -187,7 +220,7 @@ class RotationRelease(ImpalaResource):
         return super().patch(models.RotationRelease, id)
 
 
-class RotationReleaseList(ImpalaResource):
+class RotationReleaseList(LibrarianResource):
     def get(self):
         return super().get(models.RotationRelease)
 
@@ -195,7 +228,7 @@ class RotationReleaseList(ImpalaResource):
         return super().put(models.RotationRelease)
 
 
-class HoldingTag(ImpalaResource):
+class HoldingTag(UserResource):
     def get(self, id):
         return super().get(models.HoldingTag, id)
 
@@ -203,7 +236,7 @@ class HoldingTag(ImpalaResource):
         return super().patch(models.HoldingTag, id)
 
 
-class HoldingTagList(ImpalaResource):
+class HoldingTagList(UserResource):
     def get(self):
         return super().get(models.HoldingTag)
 
@@ -211,7 +244,7 @@ class HoldingTagList(ImpalaResource):
         return super().put(models.HoldingTag)
 
 
-class HoldingComment(ImpalaResource):
+class HoldingComment(UserResource):
     def get(self, id):
         return super().get(models.HoldingComment, id)
 
@@ -219,7 +252,7 @@ class HoldingComment(ImpalaResource):
         return super().patch(models.HoldingComment, id)
 
 
-class HoldingCommentList(ImpalaResource):
+class HoldingCommentList(UserResource):
     def get(self):
         return super().get(models.HoldingComment)
 
@@ -227,7 +260,7 @@ class HoldingCommentList(ImpalaResource):
         return super().put(models.HoldingComment)
 
 
-class Track(ImpalaResource):
+class Track(LibrarianResource):
     def get(self, id):
         return super().get(models.Track, id)
 
@@ -235,7 +268,7 @@ class Track(ImpalaResource):
         return super().patch(models.Track, id)
 
 
-class TrackList(ImpalaResource):
+class TrackList(LibrarianResource):
     def get(self):
         return super().get(models.Track)
 
