@@ -13,4 +13,4 @@ EXPOSE 5000
 ENV PYTHONPATH /usr/src/app
 ENV FLASK_APP impala
 
-CMD ["flask", "run"]
+CMD ["flask", "run", "-h", "::"]
