@@ -169,9 +169,8 @@ class UserResource(ImpalaResource):
     """
     Any authenticated user may do a GET. Users with the "librarian" role may
     perform arbitrary PATCH or PUT operations. All users may perform PUT
-    operations where "added_by" corresponds to their username. All users may
-    perform PATCH operations on resources where the "added_by" field
-    corresponds to their username.
+    operations. All users may perform PATCH operations on resources where the
+    "added_by" field corresponds to their username.
     """
     def get(self, model, id=None):
         if 'username' in session:
@@ -188,10 +187,8 @@ class UserResource(ImpalaResource):
             abort(403, success=False, message="Unauthorized")
 
     def put(self, model):
-        data = super().get(model, id)
-        if 'librarian' in session.get('access', []) or \
-                data['added_by'] == session['username']:
-            return super().put(model)
+        if 'username' in session:
+            return super().put(model, session['username'])
         else:
             abort(403, success=False, message="Unauthorized")
 
