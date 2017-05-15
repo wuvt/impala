@@ -8,7 +8,9 @@ import jwt
 from flask_restful import Api, Resource, abort, reqparse
 from flask import make_response, json, current_app, request, session
 from passlib.hash import pbkdf2_sha256
+import requests
 import sqlalchemy
+import urllib.parse
 from uuid import uuid4
 
 
@@ -69,12 +71,27 @@ class LoginResource(Resource):
         raw_token = request.form['token']
         unverified_header = jwt.get_unverified_header(raw_token)
 
-        # TODO: consider loading keys over HTTPS if OIDC_JWKS_URI is configured
+        if 'OIDC_KEYS' in current_app.config:
+            jwks = current_app.config['OIDC_KEYS']
+        else:
+            discovery_url = urllib.parse.urlparse(
+                current_app.config['OIDC_ISSUER'])
+            r = requests.get(
+                '{scheme}://{netloc}/.well-known/openid-configuration'.format(
+                    scheme=discovery_url.scheme,
+                    netloc=discovery_url.netloc),
+                headers={'Accept': "application/json"})
+            r.raise_for_status()
+            discovery_result = r.json()
+
+            r = requests.get(discovery_result['jwks_uri'])
+            r.raise_for_status()
+            jwks = r.json()['keys']
 
         if 'kid' in unverified_header:
             token_key = None
 
-            for jwk in current_app.config['OIDC_KEYS']:
+            for jwk in jwks:
                 if 'kid' in unverified_header and 'kid' in jwk and \
                         unverified_header['kid'] == jwk['kid']:
                     token_key = jwt.algorithms.RSAAlgorithm.from_jwk(
