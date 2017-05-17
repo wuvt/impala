@@ -47,6 +47,9 @@ class LoginResource(Resource):
         if 'X-Requested-With' not in request.headers:
             abort(400, message="Missing X-Requested-With header")
 
+        if not current_app.config['ENABLE_OIDC']:
+            abort(405)
+
         # -----BEGIN SCARY CODE-----
 
         # https://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation
