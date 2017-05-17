@@ -4,10 +4,13 @@ from datetime import datetime
 from impala.catalog import models
 from impala import db
 from impala.api.v1 import bp
+import jwt
 from flask_restful import Api, Resource, abort, reqparse
 from flask import make_response, json, current_app, request, session
 from passlib.hash import pbkdf2_sha256
+import requests
 import sqlalchemy
+import urllib.parse
 from uuid import uuid4
 
 
@@ -39,6 +42,98 @@ class LoginResource(Resource):
         else:
             return {'message': "Authentication required"}, 401, \
                     {'WWW-Authenticate': 'Basic realm="impala"'}
+
+    def post(self):
+        if 'X-Requested-With' not in request.headers:
+            abort(400, message="Missing X-Requested-With header")
+
+        if not current_app.config['ENABLE_OIDC']:
+            abort(405)
+
+        # -----BEGIN SCARY CODE-----
+
+        # https://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation
+        # tl;dr ID token validation
+        #  1. (We don't support encrypted tokens)
+        #  2. Issuer must match
+        #  3. Audience claim must contain client ID
+        #  4. If multiple audiences, `azp` SHOULD be present
+        #  5. If `azp` is present, SHOULD verify that it matches client ID
+        #  6. Token MUST have a valid signature
+        #  7. Algorithm SHOULD match our whitelist (...shouldn't this be MUST?)
+        #  8. (We don't support MAC-based algorithms)
+        #  9. Token MUST not be expired
+        # 10. (As long as the token isn't expired, we don't care how old it is)
+        # 11. (We don't use nonces)
+        # 12. (We don't use `acr` claim)
+        # 13. (We don't use the `auth_time` claim)
+        #
+        # The current implementation ignores the `azp` claim; this SHOULD be
+        # fixed at some point :)
+
+        raw_token = request.form['token']
+        unverified_header = jwt.get_unverified_header(raw_token)
+
+        if 'OIDC_KEYS' in current_app.config:
+            jwks = current_app.config['OIDC_KEYS']
+        else:
+            discovery_url = urllib.parse.urlparse(
+                current_app.config['OIDC_ISSUER'])
+            r = requests.get(
+                '{scheme}://{netloc}/.well-known/openid-configuration'.format(
+                    scheme=discovery_url.scheme,
+                    netloc=discovery_url.netloc),
+                headers={'Accept': "application/json"})
+            r.raise_for_status()
+            discovery_result = r.json()
+
+            r = requests.get(discovery_result['jwks_uri'])
+            r.raise_for_status()
+            jwks = r.json()['keys']
+
+        if 'kid' in unverified_header:
+            token_key = None
+
+            for jwk in jwks:
+                if 'kid' in unverified_header and 'kid' in jwk and \
+                        unverified_header['kid'] == jwk['kid']:
+                    token_key = jwt.algorithms.RSAAlgorithm.from_jwk(
+                        json.dumps(jwk))
+                    break
+
+            if token_key is None:
+                abort(401, message="Token is signed with unknown key")
+        else:
+            token_key = jwt.algorithms.RSAAlgorithm.from_jwk(
+                json.dumps(current_app.config['OIDC_KEYS'][0]))
+
+        try:
+            token = jwt.decode(raw_token, token_key,
+                               algorithms=['RS256', 'RS384', 'RS512'],
+                               audience=current_app.config['OIDC_CLIENT_ID'],
+                               issuer=current_app.config['OIDC_ISSUER'],
+                               leeway=current_app.config['OIDC_CLOCK_SKEW'])
+        except jwt.ExpiredSignatureError:
+            abort(401, message="Token has expired")
+        except jwt.InvalidAudienceError:
+            abort(401, message="Token was not issued for this application")
+        except jwt.InvalidIssuerError:
+            abort(401, message="Invalid token issuer")
+        except (jwt.DecodeError, jwt.InvalidTokenError):
+            abort(401, message="Invalid token")
+
+        # -----END SCARY CODE-----
+
+        session['username'] = token['sub']
+
+        librarian_groups = set(current_app.config['OIDC_LIBRARIAN_GROUPS'])
+        token_groups = set(token.get('groups', []))
+        if not token_groups.isdisjoint(librarian_groups):
+            session['access'] = ['librarian']
+        else:
+            session['access'] = []
+
+        return {'message': "Logged in"}, 200
 
 
 class LogoutResource(Resource):
