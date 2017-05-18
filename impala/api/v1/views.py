@@ -10,6 +10,7 @@ from flask import make_response, json, current_app, request, session
 from passlib.hash import pbkdf2_sha256
 import requests
 import sqlalchemy
+from sqlalchemy.orm import joinedload
 import urllib.parse
 from uuid import uuid4
 
@@ -20,8 +21,8 @@ class ApiVersionInfo(Resource):
         return {'stable': False}
 
 
-def all_fields(model):
-    columns = [c.name for c in model.__table__.columns]
+def all_fields(model, exclude=[]):
+    columns = [c.name for c in model.__table__.columns if c.name not in exclude]
     return dict([(c, getattr(model, c)) for c in columns])
 
 
@@ -432,10 +433,43 @@ class TrackMetadataList(LibrarianResource):
         return super().put(models.TrackMetadata)
 
 
+class HoldingSearchList(ImpalaResource):
+    def get(self):
+        if 'username' in session:
+            parser = reqparse.RequestParser()
+            parser.add_argument('album_artist', required=False)
+            parser.add_argument('album_title', required=False)
+            parser.add_argument('label', required=False)
+            args = parser.parse_args()
+
+            query = models.Holding.query.options(joinedload('holding_group'))
+            query = query.join(models.HoldingGroup,
+                               models.Holding.holding_group)
+
+            if args['album_artist']:
+                ilike = '%' + args['album_artist'] + '%'
+                query = query.filter(models.HoldingGroup.album_artist.ilike(ilike))
+            if args['album_title']:
+                ilike = '%' + args['album_title'] + '%'
+                query = query.filter(models.HoldingGroup.album_title.ilike(ilike))
+            if args['label']:
+                ilike = '%' + args['label'] + '%'
+                query = query.filter(models.Holding.label.ilike(ilike))
+
+            items = query.all()
+
+            return [{**all_fields(item),
+                     **all_fields(item.holding_group,
+                                  exclude=['holdings', 'id'])} for item in items]
+        else:
+            abort(403, success=False, message="Unauthorized")
+
+
 api = Api(bp)
 api.add_resource(ApiVersionInfo, '/')
 api.add_resource(LoginResource, '/login')
 api.add_resource(LogoutResource, '/logout')
+
 api.add_resource(Stack, '/stacks/<string:id>')
 api.add_resource(StackList, '/stacks')
 api.add_resource(Format, '/formats/<string:id>')
@@ -454,6 +488,8 @@ api.add_resource(Track, '/tracks/<string:id>')
 api.add_resource(TrackList, '/tracks')
 api.add_resource(TrackMetadata, '/track_metadata/<string:id>')
 api.add_resource(TrackMetadataList, '/track_metadata')
+
+api.add_resource(HoldingSearchList, '/holdings/search')
 
 
 @api.representation('application/json')
