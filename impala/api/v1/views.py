@@ -440,12 +440,18 @@ class HoldingSearchList(ImpalaResource):
             parser.add_argument('album_artist', required=False)
             parser.add_argument('album_title', required=False)
             parser.add_argument('label', required=False)
+            parser.add_argument('any', required=False)
             args = parser.parse_args()
 
             query = models.Holding.query.options(joinedload('holding_group'))
             query = query.join(models.HoldingGroup,
                                models.Holding.holding_group)
 
+            if args['any']:
+               ilike = '%' + args['any'] + '%'
+               query = query.filter(models.HoldingGroup.album_artist.ilike(ilike) |
+                                    models.HoldingGroup.album_title.ilike(ilike) |
+                                    models.Holding.label.ilike(ilike))
             if args['album_artist']:
                 ilike = '%' + args['album_artist'] + '%'
                 query = query.filter(models.HoldingGroup.album_artist.ilike(ilike))
