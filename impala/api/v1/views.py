@@ -146,13 +146,24 @@ class LogoutResource(Resource):
 
 class ImpalaResource(Resource):
     def get(self, model, id=None):
+        parser = reqparse.RequestParser()
+        parser.add_argument('page', type=int, required=False)
+        parser.add_argument('limit', type=int, required=False)
+        args = parser.parse_args()
+
         if id:
             item = model.query.get(id)
             if not item:
                 abort(404, success=False, message="Item not found")
             return all_fields(item)
         else:
-            items = model.query.all()
+            if not args['limit']:
+                args['limit'] = 20
+            if not args['page']:
+                args['page'] = 1
+            query = model.query.order_by(model.added_at.desc())
+            items = query.paginate(page=args['page'],
+                                   per_page=args['limit']).items
             return [all_fields(item) for item in items]
 
     def put(self, model, added_by="Unknown"):
@@ -441,6 +452,8 @@ class HoldingSearchList(ImpalaResource):
             parser.add_argument('album_title', required=False)
             parser.add_argument('label', required=False)
             parser.add_argument('any', required=False)
+            parser.add_argument('page', type=int, required=False)
+            parser.add_argument('limit', type=int, required=False)
             args = parser.parse_args()
 
             query = models.Holding.query.options(joinedload('holding_group'))
@@ -462,7 +475,13 @@ class HoldingSearchList(ImpalaResource):
                 ilike = '%' + args['label'] + '%'
                 query = query.filter(models.Holding.label.ilike(ilike))
 
-            items = query.all()
+            if not args['page']:
+                args['page'] = 1
+            if not args['limit']:
+                args['limit'] = 20
+
+            items = query.paginate(page=args['page'],
+                                   per_page=args['limit']).items
 
             return [{**all_fields(item),
                      **all_fields(item.holding_group,
