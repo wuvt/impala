@@ -147,8 +147,8 @@ class LogoutResource(Resource):
 class ImpalaResource(Resource):
     def get(self, model, id=None):
         parser = reqparse.RequestParser()
-        parser.add_argument('page', type=int, required=False)
-        parser.add_argument('limit', type=int, required=False)
+        parser.add_argument('page', type=int, default=1)
+        parser.add_argument('limit', type=int, default=20)
         args = parser.parse_args()
 
         if id:
@@ -157,14 +157,11 @@ class ImpalaResource(Resource):
                 abort(404, success=False, message="Item not found")
             return all_fields(item)
         else:
-            if not args['limit']:
-                args['limit'] = 20
-            if not args['page']:
-                args['page'] = 1
             query = model.query.order_by(model.added_at.desc())
-            items = query.paginate(page=args['page'],
-                                   per_page=args['limit']).items
-            return [all_fields(item) for item in items]
+            pagination = query.paginate(page=args['page'],
+                                        per_page=args['limit'])
+            return {'results': [all_fields(item) for item in pagination.items],
+                    'pages': pagination.pages, 'page': pagination.page}
 
     def put(self, model, added_by="Unknown"):
         post_parser = reqparse.RequestParser()
@@ -177,7 +174,8 @@ class ImpalaResource(Resource):
                     post_parser.add_argument(name, dest=name, type=int,
                                              required=required)
                 else:
-                    post_parser.add_argument(name, dest=name, required=required)
+                    post_parser.add_argument(name, dest=name,
+                                             required=required)
             else:
                 post_parser.add_argument(name, dest=name, required=False)
 
@@ -452,8 +450,8 @@ class HoldingSearchList(ImpalaResource):
             parser.add_argument('album_title', required=False)
             parser.add_argument('label', required=False)
             parser.add_argument('any', required=False)
-            parser.add_argument('page', type=int, required=False)
-            parser.add_argument('limit', type=int, required=False)
+            parser.add_argument('page', type=int, default=1)
+            parser.add_argument('limit', type=int, default=20)
             args = parser.parse_args()
 
             query = models.Holding.query.options(joinedload('holding_group'))
@@ -461,10 +459,10 @@ class HoldingSearchList(ImpalaResource):
                                models.Holding.holding_group)
 
             if args['any']:
-               ilike = '%' + args['any'] + '%'
-               query = query.filter(models.HoldingGroup.album_artist.ilike(ilike) |
-                                    models.HoldingGroup.album_title.ilike(ilike) |
-                                    models.Holding.label.ilike(ilike))
+                ilike = '%' + args['any'] + '%'
+                query = query.filter(models.HoldingGroup.album_artist.ilike(ilike) |
+                                     models.HoldingGroup.album_title.ilike(ilike) |
+                                     models.Holding.label.ilike(ilike))
             if args['album_artist']:
                 ilike = '%' + args['album_artist'] + '%'
                 query = query.filter(models.HoldingGroup.album_artist.ilike(ilike))
@@ -475,17 +473,16 @@ class HoldingSearchList(ImpalaResource):
                 ilike = '%' + args['label'] + '%'
                 query = query.filter(models.Holding.label.ilike(ilike))
 
-            if not args['page']:
-                args['page'] = 1
-            if not args['limit']:
-                args['limit'] = 20
+            query = query.order_by(models.HoldingGroup.added_at.desc())
+            pagination = query.paginate(page=args['page'],
+                                        per_page=args['limit'])
 
-            items = query.paginate(page=args['page'],
-                                   per_page=args['limit']).items
+            results = [{**all_fields(item),
+                        **all_fields(item.holding_group,
+                                     exclude=['holdings', 'id'])} for item in pagination.items]
+            return {'results': results, 'pages': pagination.pages,
+                    'page': pagination.page}
 
-            return [{**all_fields(item),
-                     **all_fields(item.holding_group,
-                                  exclude=['holdings', 'id'])} for item in items]
         else:
             abort(403, success=False, message="Unauthorized")
 
