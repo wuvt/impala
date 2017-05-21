@@ -18,7 +18,7 @@ from uuid import uuid4
 class ApiVersionInfo(Resource):
     # No auth required for this endpoint
     def get(self):
-        return {'stable': False}
+        return {'stable': True}
 
 
 def all_fields(model, exclude=[]):
