@@ -128,7 +128,7 @@
                     {% endif %}
                 </div>
                 <div class="col-8 col-md-10">
-                    <h5><a href="/search/artist/{{ hg.album_artist }}">{{ hg.album_artist }}</a> - <i><a href="/holdings/{{ hg.id }}">{{ hg.album_title }}</a></i></h5>
+                    <h5><a href="/search?album_artist={{ hg.album_artist }}">{{ hg.album_artist }}</a> - <i><a href="/holdings/{{ hg.id }}">{{ hg.album_title }}</a></i></h5>
                     <p class="card-text">
                     {% for h in hg.holdings %}
                     <!-- TODO color-code tag badges based on hash of text -->
