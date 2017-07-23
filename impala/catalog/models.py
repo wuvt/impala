@@ -48,6 +48,10 @@ class HoldingGroup(db.Model):
     holdings = db.relationship("Holding", backref="holding_group",
                                lazy="dynamic")
 
+    def __repr__(self):
+        return "{} by {} <{}>".format(self.album_title, self.album_artist,
+                                      self.id)
+
 
 class Holding(db.Model):
     __tablename__ = 'holdings'
@@ -73,6 +77,12 @@ class Holding(db.Model):
     holding_comments = db.relationship("HoldingComment", backref="holding",
                                        lazy="dynamic")
     tracks = db.relationship("Track", backref="holding", lazy="dynamic")
+
+    def __repr__(self):
+        return "{} by {} on {} ({}) <{}>".format(self.holding_group.album_title,
+                                                 self.holding_group.album_artist,
+                                                 self.label, self.format.name,
+                                                 self.id)
 
 
 class RotationRelease(db.Model):

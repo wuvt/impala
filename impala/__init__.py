@@ -20,6 +20,7 @@ migrate = Migrate(app, db)
 
 from impala.catalog.models import *
 from impala.api import v1
+from impala.catalog import views
 
 
 def init_app():
