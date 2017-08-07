@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 
 from datetime import datetime
+from pprint import pprint
 from impala.catalog import models
 from impala import db
 from impala.api.v1 import bp
 import jwt
 from flask_restful import Api, Resource, abort, reqparse
-from flask import make_response, json, current_app, request, session
+from flask import make_response, json, current_app, request, session, redirect
 from passlib.hash import pbkdf2_sha256
 import requests
 import sqlalchemy
@@ -37,7 +38,10 @@ class LoginResource(Resource):
                     pbkdf2_sha256.verify(auth.password, password_hash):
                 session['username'] = auth.username
                 session['access'] = user.get('access', [])
-                return {'message': "Logged in"}, 200
+                if 'next' in request.args:
+                    return redirect(request.args['next'])
+                else:
+                    return {'message': "Logged in"}, 200
             else:
                 abort(401, message="Invalid username or password")
         else:
@@ -138,6 +142,14 @@ class LoginResource(Resource):
 
 
 class LogoutResource(Resource):
+    def get(self):
+        session.pop('username', None)
+        session.pop('access', [])
+        if 'next' in request.args:
+            return redirect(request.args['next'])
+        else:
+            return {'message': "Logged out"}, 200
+
     def post(self):
         session.pop('username', None)
         session.pop('access', [])
@@ -444,6 +456,7 @@ class TrackMetadataList(LibrarianResource):
 
 class HoldingSearchList(ImpalaResource):
     def get(self):
+        pprint(dir(self))
         if 'username' in session:
             parser = reqparse.RequestParser()
             parser.add_argument('album_artist', required=False)

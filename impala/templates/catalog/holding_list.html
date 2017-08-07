@@ -1,100 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+{% extends 'catalog/catalog_base.html' %}
 
-    <title>IMPALA</title>
-
-    <!-- Bootstrap core CSS -->
-    <link rel="stylesheet" href="/static/bootstrap/css/bootstrap.min.css">
-
-    <!-- Custom styles for this template -->
-    <link href="/static/css/offcanvas.css" rel="stylesheet">
-
-    {% macro render_pagination(pagination, endpoint) %}
-    <div class="pagination">
-    <nav aria-label="...">
-    <ul class="pagination">
-    {% if pagination.has_prev %}
-      <li class="page-item">
-        <a class="page-link" href="{{ url_for(endpoint, page=pagination.prev_num) }}">Previous</a>
-      </li>
-    {% else %}
-      <li class="page-item disabled">
-        <a class="page-link">Previous</a>
-      </li>
-    {% endif %}
-    {%- for page in pagination.iter_pages() %}
-        {% if page %}
-        {% if page != pagination.page %}
-            <li class="page-item"><a class="page-link" href="{{ url_for(endpoint, page=page) }}">{{ page }}</a></li>
-        {% else %}
-            <li class="page-item active">
-              <span class="page-link">
-                {{ page }}
-                <span class="sr-only">(current)</span>
-              </span>
-            </li>
-        {% endif %}
-        {% else %}
-        <span class=ellipsis>…</span>
-        {% endif %}
-    {%- endfor %}
-    {% if pagination.has_next %}
-      <li class="page-item">
-        <a class="page-link" href="{{ url_for(endpoint, page=pagination.next_num) }}">Next</a>
-      </li>
-    {% else %}
-      <li class="page-item disabled">
-        <a class="page-link">Next</a>
-      </li>
-    {% endif %}
-      </li>
-    
-    </ul>
-    </nav>
-    </div>
-
-    {% endmacro %}
-
-
-  </head>
-
-  <body>
-
-    <nav class="navbar navbar-toggleable-md fixed-top navbar-inverse bg-inverse">
-      <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <a class="navbar-brand" href="/">IMPALA</a>
-
-      <div class="collapse navbar-collapse" id="navbarsExampleDefault">
-        <ul class="navbar-nav mr-auto">
-          <li class="nav-item active">
-            <a class="nav-link" href="/holdings">Holdings<span class="sr-only">(current)</span></a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/collages">Collages</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/requests">Requests</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/charts">Trending</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/help">Help</a>
-          </li>
-        </ul>
-        <form class="form-inline my-2 my-lg-0" action="/search" method="get">
-          <input class="form-control mr-sm-2" type="text" placeholder="Search" name="any">
-          <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-        </form>
-      </div>
-    </nav>
-
-    <div class="container">
+{% block body_content %}
 
       <div class="row row-offcanvas row-offcanvas-right">
 
@@ -125,7 +31,7 @@
                     {% endif %}
                 </div>
                 <div class="col-8 col-md-10">
-                    <h5><a href="/search?album_artist={{ hg.album_artist }}">{{ hg.album_artist }}</a> - <i><a href="/holdings/{{ hg.id }}">{{ hg.album_title }}</a></i></h5>
+                    <h5><a href="/search?album_artist={{ hg.album_artist }}">{{ hg.album_artist }}</a> - <i><a href="/holding_groups/{{ hg.id }}">{{ hg.album_title }}</a></i></h5>
                     <p class="card-text">
                     {% for h in hg.holdings %}
                     <!-- TODO color-code tag badges based on hash of text -->
@@ -153,7 +59,7 @@
                     <tr>
                     <th scope="row"></th>
                     <td>{{ h.label }}</td>
-                    <td>{{ h.format.name }}</td>
+										<td><a href="/holdings/{{ h.id }}">{{ h.format.name }}</a></td>
                     <td>
                         {% if h.release_mbid %}
                         [ <a href="https://musicbrainz.org/release/{{ h.release_mbid }}">MB</a> ]
@@ -191,21 +97,5 @@
 
       </div><!--/row-->
 
-      <hr>
 
-      <footer>
-        <p>Powered by <a href="https://github.com/wuvt/impala">IMPALA</a></p>
-      </footer>
-
-    </div><!--/.container-->
-
-
-    <!-- Bootstrap core JavaScript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script src="/static/js/jquery.min.js"></script>
-    <script src="/static/js/tether.min.js"></script>
-    <script src="/static/bootstrap/js/bootstrap.min.js"></script>
-  </body>
-</html>
-
+{% endblock %}

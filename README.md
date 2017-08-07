@@ -15,7 +15,8 @@ indirectly.
 Components so far
 =================
 
-- Versioned api ('/api') with PUT/POST for each model
+- Versioned api ('/api') with PUT/POST for each model. Verson 1 is currently
+  stable.
 - Authentication with two roles (user and librarian)
 - Catalog models
 
@@ -39,7 +40,9 @@ flask db upgrade
 TODO (in order)
 ===============
 - Frontend build-out 
-    - Decide whether this goes here or in a separate app
-    - Bootstrap!
+    - Holding detail page
+    - HoldingGroup detail page
+    - Search results should use our existing search API
+    - Add auth
 - uwsgi file
 - Containerize
