@@ -31,7 +31,7 @@
                     {% endif %}
                 </div>
                 <div class="col-8 col-md-10">
-                    <h5><a href="/search?album_artist={{ hg.album_artist }}">{{ hg.album_artist }}</a> - <i><a href="/holding_groups/{{ hg.id }}">{{ hg.album_title }}</a></i></h5>
+										<h5><a href="/search?album_artist={{ hg.album_artist }}">{{ hg.album_artist }}</a> - <i><a href="/holding_groups/{{ hg.id }}">{{ hg.album_title }}</a></i></h5> {% if 'librarian' in access %} <p class="text-right">[<a href="/holding_groups/{{ hg.id }}/edit">ED</a>]{% endif %}</p>
                     <p class="card-text">
                     {% for h in hg.holdings %}
                     <!-- TODO color-code tag badges based on hash of text -->
@@ -61,9 +61,14 @@
                     <td>{{ h.label }}</td>
 										<td><a href="/holdings/{{ h.id }}">{{ h.format.name }}</a></td>
                     <td>
+												[ <a href="/holdings/{{ h.id }}/report" title="Report problem to library staff">RP</a>
                         {% if h.release_mbid %}
-                        [ <a href="https://musicbrainz.org/release/{{ h.release_mbid }}">MB</a> ]
+                        | <a href="https://musicbrainz.org/release/{{ h.release_mbid }}" title="Show album on MusicBrainz">MB</a>
+												{% endif %}
+												{% if 'librarian' in access %}
+												| <a href="/holdings/{{ h.id }}/edit" title="Edit holding">ED</a>
                         {% endif %}
+												]
                     
                     </td>
                     <td>{% for rr in h.rotation_releases %}

@@ -44,5 +44,8 @@ TODO (in order)
     - HoldingGroup detail page
     - Search results should use our existing search API
     - Add auth
+    - Support for reporting holdings/holding groups as bad
+    - Support for adding non-digital holdings
+    - Support for editing non-digital holdings
 - uwsgi file
 - Containerize

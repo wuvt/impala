@@ -10,11 +10,13 @@ from impala.catalog.models import Holding, HoldingGroup, Format
 
 RESULTS_PER_PAGE = 25
 
-TOP_NAV = [('/holdings', 'Holdings'),
-           ('/collages', 'Collages'),
-           ('/requests', 'Requests'),
-           ('/charts', 'Charts'),
-           ('/help', 'Help')]
+TOP_NAV = [('/holdings', 'Browse Holdings', None),
+           ('/add', 'Add Record', 'librarian'),
+           ('/collages', 'Collages', None),
+           ('/requests', 'Requests', None),
+           ('/charts', 'Charts', 'librarian'),
+           ('/reports', 'Reports', 'librarian'),
+           ('/help', 'Help', None)]
 
 @app.route('/')
 def index():
@@ -27,8 +29,10 @@ def list_holdings(page):
     # TODO sort by newest
     if 'username' in session:
         user = session['username']
+        access = session['access']
     else:
         user = None
+        access = []
 
     pagination = HoldingGroup.query.join(Holding).join(Format).filter(Holding.active == True).paginate(page, per_page=RESULTS_PER_PAGE)
 
@@ -44,7 +48,8 @@ def list_holdings(page):
                            now=now, pagination=pagination,
                            holding_groups=holding_groups,
                            user=user, endpoint="list_holdings",
-                           top_nav=TOP_NAV, curpage="Holdings")
+                           top_nav=TOP_NAV, curpage="Browse Holdings",
+                           access=access)
 
 
 @app.route('/search', defaults={'page': 1})
@@ -54,8 +59,10 @@ def search(page):
     # helper function
     if 'username' in session:
         user = session['username']
+        access = session['access']
     else:
         user = None
+        access = []
     # TODO sort by newest
     query = HoldingGroup.query.join(Holding)
     if 'any' in request.args:
@@ -77,7 +84,8 @@ def search(page):
                            now=now, pagination=pagination,
                            holding_groups=holding_groups,
                            user=user, endpoint="search",
-                           top_nav=TOP_NAV, curpage=None)
+                           top_nav=TOP_NAV, curpage=None,
+                           access=access)
 
 
 @app.route('/coverartarchive/<type>/<mbid>', defaults={'size': 0})
