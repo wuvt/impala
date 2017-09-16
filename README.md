@@ -39,6 +39,8 @@ flask db upgrade
 
 TODO (in order)
 ===============
+- Containerize
+- uwsgi file
 - Frontend build-out 
     - Holding detail page
     - HoldingGroup detail page
@@ -47,5 +49,4 @@ TODO (in order)
     - Support for reporting holdings/holding groups as bad
     - Support for adding non-digital holdings
     - Support for editing non-digital holdings
-- uwsgi file
-- Containerize
+- Add a background deduplicator service

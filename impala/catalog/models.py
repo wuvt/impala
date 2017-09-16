@@ -65,6 +65,7 @@ class Holding(db.Model):
     description = db.Column(db.Text())
     source_url = db.Column(db.String())
     source_desc = db.Column(db.Text())
+    torrent_hash = db.Column(db.String(), nullable=True, unique=True)
     active = db.Column(db.Boolean(), nullable=False, default=True)
 
     holding_group_id = db.Column(UUID, db.ForeignKey('holding_groups.id'),

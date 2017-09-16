@@ -456,12 +456,12 @@ class TrackMetadataList(LibrarianResource):
 
 class HoldingSearchList(ImpalaResource):
     def get(self):
-        pprint(dir(self))
         if 'username' in session:
             parser = reqparse.RequestParser()
             parser.add_argument('album_artist', required=False)
             parser.add_argument('album_title', required=False)
             parser.add_argument('label', required=False)
+            parser.add_argument('torrent_hash', required=False)
             parser.add_argument('any', required=False)
             parser.add_argument('page', type=int, default=1)
             parser.add_argument('limit', type=int, default=20)
@@ -475,7 +475,8 @@ class HoldingSearchList(ImpalaResource):
                 ilike = '%' + args['any'] + '%'
                 query = query.filter(models.HoldingGroup.album_artist.ilike(ilike) |
                                      models.HoldingGroup.album_title.ilike(ilike) |
-                                     models.Holding.label.ilike(ilike))
+                                     models.Holding.label.ilike(ilike) |
+                                     models.Holding.torrent_hash.ilike(ilike))
             if args['album_artist']:
                 ilike = '%' + args['album_artist'] + '%'
                 query = query.filter(models.HoldingGroup.album_artist.ilike(ilike))
@@ -485,6 +486,9 @@ class HoldingSearchList(ImpalaResource):
             if args['label']:
                 ilike = '%' + args['label'] + '%'
                 query = query.filter(models.Holding.label.ilike(ilike))
+            if args['torrent_hash']:
+                ilike = '%' + args['torrent_hash'] + '%'
+                query = query.filter(models.Holding.torrent_hash.ilike(ilike))
 
             query = query.order_by(models.HoldingGroup.added_at.desc())
             pagination = query.paginate(page=args['page'],
