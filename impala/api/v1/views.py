@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 from datetime import datetime
-from pprint import pprint
 from impala.catalog import models
 from impala import db
 from impala.api.v1 import bp
@@ -476,7 +475,7 @@ class HoldingSearchList(ImpalaResource):
                 query = query.filter(models.HoldingGroup.album_artist.ilike(ilike) |
                                      models.HoldingGroup.album_title.ilike(ilike) |
                                      models.Holding.label.ilike(ilike) |
-                                     models.Holding.torrent_hash.ilike(ilike))
+                                     models.Holding.torrent_hash.ilike(args['any']))
             if args['album_artist']:
                 ilike = '%' + args['album_artist'] + '%'
                 query = query.filter(models.HoldingGroup.album_artist.ilike(ilike))
@@ -487,8 +486,7 @@ class HoldingSearchList(ImpalaResource):
                 ilike = '%' + args['label'] + '%'
                 query = query.filter(models.Holding.label.ilike(ilike))
             if args['torrent_hash']:
-                ilike = '%' + args['torrent_hash'] + '%'
-                query = query.filter(models.Holding.torrent_hash.ilike(ilike))
+                query = query.filter(models.Holding.torrent_hash.ilike(args['torrent_hash']))
 
             query = query.order_by(models.HoldingGroup.added_at.desc())
             pagination = query.paginate(page=args['page'],
