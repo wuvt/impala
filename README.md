@@ -8,7 +8,7 @@ PostgreSQL.
 
 The following applications currently work with impala, either directly or
 indirectly.
-- smuggler (an import service)
+- [smuggler](https://github.com/wuvt/smuggler) (an import service)
 - [moss](https://github.com/wuvt/moss) (an object store for entire albums)
 
 
@@ -50,3 +50,21 @@ TODO (in order)
     - Support for adding non-digital holdings
     - Support for editing non-digital holdings
 - Add a background deduplicator service
+
+License
+=======
+
+    Copyright (C) 2017 Matt Hazinski and mutantmonkey
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published
+    by the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
