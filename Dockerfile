@@ -1,5 +1,7 @@
 FROM python:3
 
+RUN pip install --no-cache-dir uWSGI==2.0.15
+
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
@@ -13,4 +15,4 @@ EXPOSE 5000
 ENV PYTHONPATH /usr/src/app
 ENV FLASK_APP impala
 
-CMD ["flask", "run", "-h", "::"]
+CMD ["uwsgi", "--master", "--http", ":5000", "--processes", "4", "--harakiri", "90", "--module", "impala", "--callable", "app"]
