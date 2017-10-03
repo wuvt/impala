@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from datetime import datetime
+from enum import Enum
 from impala.catalog import models
 from impala import db
 from impala.api.v1 import bp
@@ -23,7 +24,15 @@ class ApiVersionInfo(Resource):
 
 def all_fields(model, exclude=[]):
     columns = [c.name for c in model.__table__.columns if c.name not in exclude]
-    return dict([(c, getattr(model, c)) for c in columns])
+    d = {}
+
+    for c in columns:
+        value = getattr(model, c)
+        if isinstance(value, Enum):
+            value = value.name
+        d[c] = value
+
+    return d
 
 
 class LoginResource(Resource):
