@@ -1,0 +1,20 @@
+version: '3'
+services:
+  app:
+    image: impala_app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+    - APP_CONFIG_PATH=/data/config/config.json
+    - USE_EMBEDDED_DB
+    volumes:
+    - ../impala-data:/data/config
+    external_links:
+    - postgres
+    depends_on:
+    - elasticsearch
+  elasticsearch:
+    image: elasticsearch:7.8.0
+    environment:
+    - discovery.type=single-node

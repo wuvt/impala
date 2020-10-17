@@ -1,6 +1,12 @@
-FROM python:3.7
+FROM python:3.8
 
-RUN pip install --no-cache-dir uWSGI==2.0.15
+#RUN apt update \
+#        && apt install -y build-essential \
+#        && pip install --no-cache-dir uWSGI==2.0.15 \
+#        && apt remove -y build-essential
+
+RUN pip install --no-cache-dir uWSGI==2.0.18
+
 
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app

@@ -1,0 +1,10 @@
+Flask
+Flask-Alembic
+Flask-Migrate
+Flask-RESTful
+Flask-SQLAlchemy
+PyJWT
+cryptography
+passlib
+psycopg2
+requests
