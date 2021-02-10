@@ -4,32 +4,79 @@
 #
 #    pip-compile
 #
-alembic==1.4.3            # via flask-alembic, flask-migrate
-aniso8601==8.0.0          # via flask-restful
-certifi==2020.6.20        # via requests
-cffi==1.14.3              # via cryptography
-chardet==3.0.4            # via requests
-click==7.1.2              # via flask
-cryptography==3.2         # via -r requirements.in
-flask-alembic==2.0.1      # via -r requirements.in
-flask-migrate==2.5.3      # via -r requirements.in
-flask-restful==0.3.8      # via -r requirements.in
-flask-sqlalchemy==2.4.4   # via -r requirements.in, flask-alembic, flask-migrate
-flask==1.1.2              # via -r requirements.in, flask-alembic, flask-migrate, flask-restful, flask-sqlalchemy
-idna==2.10                # via requests
-itsdangerous==1.1.0       # via flask
-jinja2==2.11.2            # via flask
-mako==1.1.3               # via alembic
-markupsafe==1.1.1         # via jinja2, mako
-passlib==1.7.4            # via -r requirements.in
-psycopg2==2.8.6           # via -r requirements.in
-pycparser==2.20           # via cffi
-pyjwt==1.7.1              # via -r requirements.in
-python-dateutil==2.8.1    # via alembic
-python-editor==1.0.4      # via alembic
-pytz==2020.1              # via flask-restful
-requests==2.24.0          # via -r requirements.in
-six==1.15.0               # via cryptography, flask-restful, python-dateutil
-sqlalchemy==1.3.20        # via alembic, flask-alembic, flask-sqlalchemy
-urllib3==1.25.10          # via requests
-werkzeug==1.0.1           # via flask
+alembic==1.4.3
+    # via
+    #   flask-alembic
+    #   flask-migrate
+aniso8601==8.0.0
+    # via flask-restful
+certifi==2020.6.20
+    # via requests
+cffi==1.14.3
+    # via cryptography
+chardet==3.0.4
+    # via requests
+click==7.1.2
+    # via flask
+cryptography==3.3.2
+    # via -r requirements.in
+flask-alembic==2.0.1
+    # via -r requirements.in
+flask-migrate==2.5.3
+    # via -r requirements.in
+flask-restful==0.3.8
+    # via -r requirements.in
+flask-sqlalchemy==2.4.4
+    # via
+    #   -r requirements.in
+    #   flask-alembic
+    #   flask-migrate
+flask==1.1.2
+    # via
+    #   -r requirements.in
+    #   flask-alembic
+    #   flask-migrate
+    #   flask-restful
+    #   flask-sqlalchemy
+idna==2.10
+    # via requests
+itsdangerous==1.1.0
+    # via flask
+jinja2==2.11.2
+    # via flask
+mako==1.1.3
+    # via alembic
+markupsafe==1.1.1
+    # via
+    #   jinja2
+    #   mako
+passlib==1.7.4
+    # via -r requirements.in
+psycopg2==2.8.6
+    # via -r requirements.in
+pycparser==2.20
+    # via cffi
+pyjwt==1.7.1
+    # via -r requirements.in
+python-dateutil==2.8.1
+    # via alembic
+python-editor==1.0.4
+    # via alembic
+pytz==2020.1
+    # via flask-restful
+requests==2.24.0
+    # via -r requirements.in
+six==1.15.0
+    # via
+    #   cryptography
+    #   flask-restful
+    #   python-dateutil
+sqlalchemy==1.3.20
+    # via
+    #   alembic
+    #   flask-alembic
+    #   flask-sqlalchemy
+urllib3==1.25.10
+    # via requests
+werkzeug==1.0.1
+    # via flask
