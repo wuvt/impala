@@ -1,0 +1,1 @@
+ALTER TABLE holdings DROP CONSTRAINT holdings_torrent_hash_key;

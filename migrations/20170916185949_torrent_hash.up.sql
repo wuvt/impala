@@ -1,0 +1,1 @@
+ALTER TABLE holdings ADD COLUMN torrent_hash character varying;
