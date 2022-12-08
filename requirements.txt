@@ -10,7 +10,7 @@ alembic==1.4.3
     #   flask-migrate
 aniso8601==8.0.0
     # via flask-restful
-certifi==2020.6.20
+certifi==2022.12.7
     # via requests
 cffi==1.14.3
     # via cryptography
@@ -20,6 +20,13 @@ click==7.1.2
     # via flask
 cryptography==3.3.2
     # via -r requirements.in
+flask==1.1.2
+    # via
+    #   -r requirements.in
+    #   flask-alembic
+    #   flask-migrate
+    #   flask-restful
+    #   flask-sqlalchemy
 flask-alembic==2.0.1
     # via -r requirements.in
 flask-migrate==2.5.3
@@ -31,13 +38,6 @@ flask-sqlalchemy==2.4.4
     #   -r requirements.in
     #   flask-alembic
     #   flask-migrate
-flask==1.1.2
-    # via
-    #   -r requirements.in
-    #   flask-alembic
-    #   flask-migrate
-    #   flask-restful
-    #   flask-sqlalchemy
 idna==2.10
     # via requests
 itsdangerous==1.1.0
